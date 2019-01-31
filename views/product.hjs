@@ -1,0 +1,234 @@
+<html>
+    <head>
+        <title>Add Product</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"> 
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>       
+    <script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script> 
+    </head>
+    <body>
+<style>
+  .nav
+  {
+      display: flex;
+      justify-content: center;
+  }
+  .nav > a
+  {
+    border-right: 1px solid grey;
+    padding: 5px 15px;
+  }
+  .nav > a:first-child
+  {
+    border-left: 1px solid grey;
+  }
+  
+</style>
+<div class="nav">    
+  <a href="/">Home</a>
+  <a href="/register">Register</a>
+  <a href="/product">Add Product</a>
+  <a href="/order">Add Order</a>
+    <a href="/logout">Log Out</a>
+  <a href="/passportLogin">LogIn Passport</a>
+
+
+</div>
+<hr style="margin-top: 0">
+<div class="container">
+<div class="row">
+    <div class="col-md-12">
+        <span class="btn btn-info">
+username : {{username}}            
+        </span>
+    </div>
+</div>
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <h2 style="font-family:cursive;color:#099ad1;text-shadow:1px 1px 1px grey;">View Product</h2>
+        </div>
+        <div class="col-md-6">
+            <a href="#" data-target="#myModal" data-toggle="modal" class="btn btn-info pull-right addModal">
+                Add Product
+            </a>
+        </div>
+    </div>
+    <div class="row">    
+        <div class="col-md-12">
+            <div style="height:350px;overflow-y:scroll">
+                <table class="table table-bordered" id="myTable">
+                        <thead class="thead-light">
+                            <tr>
+                            <th>Sno</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th style="width:18%">Status</th>
+                            <th>Delete</th>
+                            <th>Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                    
+                        </tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<!-- The Modal -->
+<div id="myModal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title" style="text-align:center;width:100%;font-family:cursive">Upload Product</h4>
+      </div>
+
+      <!-- Modal body -->
+        <div class="modal-body">
+            <form>
+                <input type="text" id="name" placeholder="Enter product name" class="form-control"/><br>
+                <input type="text" id="price" placeholder="Enter product price" class="form-control"/><br>
+                <input type="text" id="quantity" placeholder="Enter product quantity" class="form-control"/><br>
+                <div style="display: flex;justify-content:center;">
+                    <button type="button" id="addData" class="btn btn-info" style="border-radius:0">Submit</button>
+                    <button type="button" id="buttonUpdate" class="btn btn-info" style="border-radius:0;display:none;">Update</button>
+                    <button type="button" id="closeModal" class="btn btn-danger" style="border-radius:0" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+</div>
+
+    </body>
+</html>
+
+<script>
+    $(document).ready(function(){
+        $('#addData').on('click',function(){
+            let addProductObj = {
+                name:$('#name').val(),
+                price:$('#price').val(),
+                quantity:$('#quantity').val()
+            }
+            axios.post('/product/addProductRoute',addProductObj).then((res)=>{
+                console.log(res.data)
+                if(res.data == 'SUCCESS')
+                {
+                    swal({icon: "success" ,title:"Success", text : "Data entered successfully.." , type : "success"}).then(function(){
+                    location.reload();
+                })
+                }
+                else
+                {
+                    swal({icon: "success" ,title:"Success", text : "Data entered successfully.." , type : "success"}).then(function(){
+                    location.reload();
+                })
+                }
+            })
+        })
+
+// fetch data
+    axios.get('/product/fetchData').then((res)=>{
+        let data = res.data;
+        var x=1;
+        var quantityVar
+        for(let i=0 ; i<data.length ; i++)
+        {
+            let quantityStatus = data[i].quantity;
+            if(quantityStatus != 0)
+            {
+                quantityStatus = 'available'
+            }
+            else
+            {
+                quantityStatus = 'out of stock'
+            }
+            $('#tableBody').append('<tr><td>' + x + '</td><td>' +data[i].name+ '</td><td>' +data[i].price+ '</td><td>' +data[i].quantity+ '</td><td>' +quantityStatus+ '</td><td>'+ '<button id="deleteProduct_'+data[i].id+'" class="deleteProduct" style="border:0; cursor:pointer; background:palevioletred;padding:5px;color:white;"><i class="fa fa-trash"></i> Delete</button>' + '</td><td>' + '<button id="editProduct_'+data[i].id+' " class="editProduct" style="border:0;cursor:pointer; background:skyblue;padding:5px;color:white;"><i class="fa fa-edit"></i> Edit</button>' +  '</td></tr>')                          
+        x++;
+        }
+    })
+    
+// delete product
+
+    $('body').on('click','.deleteProduct',function()
+    {
+        let id = $(this).attr('id').split('_').pop();
+        
+        axios.post('/product/deleteProduct',{id:id}).then((res)=>{
+            if(res.data == 'SUCCESS')
+            {
+                console.log('inside')
+                swal({icon: "success" ,title:"Success", text : "Data deleted successfully.." , type : "success"}).then(function(){
+                    location.reload();
+                })
+            }
+            else
+            {
+                alert('opps')
+
+            }
+        })
+    })
+
+// update product
+    var updatedId;
+    $('body').on('click','.editProduct',function(){
+        $('#myModal').modal();
+        $('#addData').css({'display':'none'});
+        $('#buttonUpdate').css({'display':'block'});
+        var id = $(this).attr('id').split('_').pop();
+        updatedId = id ;
+        axios.post('/product/getEditData',{id:updatedId}).then((res)=>{
+            let data = res.data ;
+            $('#name').val(data.name);
+            $('#price').val(data.price);
+            $('#quantity').val(data.quantity);
+        })
+        
+    })    
+
+
+        $('#buttonUpdate').on('click',function(){
+            let name = $('#name').val();
+            let price = $('#price').val();
+            let quantity = $('#quantity').val();
+            
+            let updatedObj = {
+                id:updatedId,
+                name:name,
+                price:price,
+                quantity:quantity
+            }
+            
+            axios.post('/product/updateProduct',updatedObj).then((res)=>{
+                if(res.data == 'SUCCESS')
+                {
+                    swal({icon: "success" ,title:"Success", text : "Data updated successfully.." , type : "success"}).then(function(){
+                        location.reload();
+                    })
+                }
+                else
+                {
+                    alert('opps!')
+                }
+            })
+
+
+        })
+
+    })
+</script>
